@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <EditText
+        android:id="@+id/input_x"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="坐标x" />
+
+    <EditText
+        android:id="@+id/input_y"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="坐标y" />
+
+    <Button
+        android:id="@+id/btn_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="自动点击" />
+
+</LinearLayout>
