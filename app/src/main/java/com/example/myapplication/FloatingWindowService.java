@@ -83,7 +83,19 @@ public class FloatingWindowService extends Service implements View.OnClickListen
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_open) {
-            Log.e("CLICK", "START!!!!!!!!!!");
+            if(editText_x.getText() !=null){
+                String userInput_x = editText_x.getText().toString();
+                String userInput_y = editText_y.getText().toString();
+
+                if(userInput_x!=null&&userInput_y!=null){
+                    int x = Integer.parseInt(userInput_x);
+                    int y = Integer.parseInt(userInput_y);
+                    Log.e("CLICK", "START!!!!!!!!!!");
+                }
+            }
+
+
+
 
 
         }
@@ -104,13 +116,10 @@ public class FloatingWindowService extends Service implements View.OnClickListen
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         editText_x = mFloatingView.findViewById(R.id.input_x);
-        String userInput_x = editText_x.getText().toString();
+
 
         editText_y = mFloatingView.findViewById(R.id.input_y);
-        String userInput_y = editText_y.getText().toString();
 
-        int x = Integer.parseInt(userInput_x);
-        int y = Integer.parseInt(userInput_y);
 
 
 

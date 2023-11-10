@@ -1,5 +1,9 @@
 package com.example.myapplication;
 
+import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED;
+import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED;
+import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOWS_CHANGED;
+import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import android.accessibilityservice.AccessibilityService;
@@ -56,14 +60,74 @@ public class MyAccessibilityService extends AccessibilityService {
     public void onServiceConnected() {
 
     }
+//    TYPE_VIEW_CLICKED - 点击事件
+//    TYPE_VIEW_LONG_CLICKED - 长按事件
+//    TYPE_VIEW_SELECTED - 选中事件
+//    TYPE_VIEW_FOCUSED - 获取焦点事件
+//    TYPE_VIEW_TEXT_CHANGED - 文本变化事件
+//    TYPE_WINDOW_STATE_CHANGED - 窗口状态变化事件
+//    TYPE_NOTIFICATION_STATE_CHANGED - 通知状态变化事件
+//    TYPE_VIEW_HOVER_ENTER - 悬停进入事件
+//    TYPE_VIEW_HOVER_EXIT - 悬停退出事件
+//    TYPE_TOUCH_EXPLORATION_GESTURE_START - 触摸浏览手势开始事件
+//    TYPE_TOUCH_EXPLORATION_GESTURE_END - 触摸浏览手势结束事件
+//    TYPE_VIEW_SCROLLED - 滚动事件
+//    TYPE_VIEW_TEXT_SELECTION_CHANGED - 文本选中变化事件
+//    TYPE_ANNOUNCEMENT - 公告事件
+//    TYPE_VIEW_ACCESSIBILITY_FOCUSED - 获取辅助功能焦点事件
+//    TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED - 清除辅助功能焦点事件
+//    TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY - 在运动粒度遍历文本事件
+//    TYPE_GESTURE_DETECTION_START - 手势识别开始事件
+//    TYPE_GESTURE_DETECTION_END - 手势识别结束事件
+//    TYPE_TOUCH_INTERACTION_START - 触摸交互开始事件
+//    TYPE_TOUCH_INTERACTION_END - 触摸交互结束事件
+//    TYPE_WINDOWS_CHANGED - 窗口变化事件
+//    TYPE_VIEW_CONTEXT_CLICKED - 上下文点击事件
+//    TYPE_ASSIST_READING_CONTEXT - 辅助阅读上下文事件
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+//        Log.e("OPEN", "start to find");
+        if (event.getEventType() == TYPE_WINDOW_STATE_CHANGED) {
+            Log.e("OPEN", "TYPE_WINDOW_STATE_CHANGED");
 
+        }else if(event.getEventType() == TYPE_VIEW_CLICKED){
+            Log.e("OPEN", "TYPE_VIEW_CLICKED");
+        }else if(event.getEventType() == TYPE_VIEW_FOCUSED){
+            Log.e("OPEN", "TYPE_VIEW_FOCUSED");
+        }else if(event.getEventType() == TYPE_VIEW_FOCUSED){
+            Log.e("OPEN", "TYPE_VIEW_SCROLLED");
+        }else if(event.getEventType() == TYPE_VIEW_FOCUSED){
+            Log.e("OPEN", "TYPE_VIEW_LONG_CLICKED");
+        }
+//        triggerAccessibilityEvent(400, 400);
+    }
 
-        triggerAccessibilityEvent(200,200);
-        Log.e("OPEN", "start to find  ");
-//        Toast.makeText(getApplicationContext(), "hello", Toast.LENGTH_SHORT);
+    private void findByID(AccessibilityNodeInfo rootInfo, String text) {
+        if (rootInfo.getChildCount() > 0) {
+            Log.e("START", "start to find 1");
+            for (int i = 0; i < rootInfo.getChildCount(); i++) {
+                AccessibilityNodeInfo child = rootInfo.getChild(i);
+                Log.e("START", "start to find 2");
+                try {
+                    if (child.findAccessibilityNodeInfosByViewId(text).size() > 0) {
+                        Log.e("START", "start to find 3");
+                        for (AccessibilityNodeInfo info : child.findAccessibilityNodeInfosByViewId(text)) {
+                            Log.e("START", "start to find 4");
+                            getClickable(info).performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                            Log.e("CLICK", "have clicked");
+//                            performClick(getClickable(info));
+                            //模仿全局手势
+//                        performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
+                        }
+                    }
+                } catch (NullPointerException e) {
+                }
+                findByID(child, text);//递归一直找一层层的全部遍历
+            }
+        }
+    }
+///        Toast.makeText(getApplicationContext(), "hello", Toast.LENGTH_SHORT);
 
 //        new Thread(new Runnable() {
 //            @Override
@@ -72,7 +136,7 @@ public class MyAccessibilityService extends AccessibilityService {
 //            }
 //        }).start();
 
-//        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
+    //        if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
 //            AccessibilityNodeInfo nodeInfo = event.getSource();
 //            if (nodeInfo != null) {
 //                // 执行自动点击操作
@@ -101,33 +165,6 @@ public class MyAccessibilityService extends AccessibilityService {
 //        } catch (Exception e) {
 //            Log.e("not found ERROR!", "not found!");
 //        }
-    }
-
-    private void findByID(AccessibilityNodeInfo rootInfo, String text) {
-        if (rootInfo.getChildCount() > 0) {
-            Log.e("START", "start to find 1");
-            for (int i = 0; i < rootInfo.getChildCount(); i++) {
-                AccessibilityNodeInfo child = rootInfo.getChild(i);
-                Log.e("START", "start to find 2");
-                try {
-                    if (child.findAccessibilityNodeInfosByViewId(text).size() > 0) {
-                        Log.e("START", "start to find 3");
-                        for (AccessibilityNodeInfo info : child.findAccessibilityNodeInfosByViewId(text)) {
-                            Log.e("START", "start to find 4");
-                            getClickable(info).performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                            Log.e("CLICK", "have clicked");
-//                            performClick(getClickable(info));
-                            //模仿全局手势
-//                        performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
-                        }
-                    }
-                } catch (NullPointerException e) {
-                }
-                findByID(child, text);//递归一直找一层层的全部遍历
-            }
-        }
-    }
-
     //有些节点不可点击 点击交给父级甚至父级的父级...来做的。
     private AccessibilityNodeInfo getClickable(AccessibilityNodeInfo info) {
         Log.i(TAG, info.getClassName() + ": " + info.isClickable());
