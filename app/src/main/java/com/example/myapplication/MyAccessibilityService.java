@@ -2,6 +2,8 @@ package com.example.myapplication;
 
 import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED;
 import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED;
+import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_LONG_CLICKED;
+import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_SCROLLED;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOWS_CHANGED;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
@@ -25,7 +27,9 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import java.time.Clock;
 import java.util.List;
+import java.util.Stack;
 
 public class MyAccessibilityService extends AccessibilityService {
 
@@ -60,7 +64,8 @@ public class MyAccessibilityService extends AccessibilityService {
     public void onServiceConnected() {
 
     }
-//    TYPE_VIEW_CLICKED - 点击事件
+
+    //    TYPE_VIEW_CLICKED - 点击事件
 //    TYPE_VIEW_LONG_CLICKED - 长按事件
 //    TYPE_VIEW_SELECTED - 选中事件
 //    TYPE_VIEW_FOCUSED - 获取焦点事件
@@ -84,23 +89,101 @@ public class MyAccessibilityService extends AccessibilityService {
 //    TYPE_WINDOWS_CHANGED - 窗口变化事件
 //    TYPE_VIEW_CONTEXT_CLICKED - 上下文点击事件
 //    TYPE_ASSIST_READING_CONTEXT - 辅助阅读上下文事件
+    static int index = 0;
+    static boolean STATE_CHANGE_FLAG = false;
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-//        Log.e("OPEN", "start to find");
-        if (event.getEventType() == TYPE_WINDOW_STATE_CHANGED) {
-            Log.e("OPEN", "TYPE_WINDOW_STATE_CHANGED");
+        boolean flag = false;
 
-        }else if(event.getEventType() == TYPE_VIEW_CLICKED){
+//        Log.e("OPEN", "start to find");
+        if (event.getEventType() == TYPE_WINDOW_STATE_CHANGED && !STATE_CHANGE_FLAG) {
+            Log.e("OPEN", "TYPE_WINDOW_STATE_CHANGED");
+//            triggerAccessibilityEvent(400, 400);
+
+
+            flag = true;
+            STATE_CHANGE_FLAG = true;
+        } else if (event.getEventType() == TYPE_VIEW_CLICKED) {
             Log.e("OPEN", "TYPE_VIEW_CLICKED");
-        }else if(event.getEventType() == TYPE_VIEW_FOCUSED){
+//            triggerAccessibilityEvent(400, 400);
+            flag = true;
+            STATE_CHANGE_FLAG = false;
+        } else if (event.getEventType() == TYPE_VIEW_FOCUSED) {
             Log.e("OPEN", "TYPE_VIEW_FOCUSED");
-        }else if(event.getEventType() == TYPE_VIEW_FOCUSED){
+            flag = true;
+            STATE_CHANGE_FLAG = false;
+        } else if (event.getEventType() == TYPE_VIEW_SCROLLED) {
             Log.e("OPEN", "TYPE_VIEW_SCROLLED");
-        }else if(event.getEventType() == TYPE_VIEW_FOCUSED){
+            flag = true;
+            STATE_CHANGE_FLAG = false;
+        } else if (event.getEventType() == TYPE_VIEW_LONG_CLICKED) {
             Log.e("OPEN", "TYPE_VIEW_LONG_CLICKED");
+            flag = true;
+            STATE_CHANGE_FLAG = false;
         }
-//        triggerAccessibilityEvent(400, 400);
+
+        if (flag) {
+            AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+            if (rootNode != null) {
+                traverseAndPrintNode(rootNode);
+            }
+            flag = false;
+            index = 0;
+        }
+
+//
+    }
+
+    private void traverseAndPrintNode(AccessibilityNodeInfo node) {
+
+        if (node != null) {
+            String nodeName = node.getClassName().toString();
+//            ("android.widget.Button".equals(nodeName)
+            if ("android.widget.EditText".equals(nodeName)) {
+                String nodeId = "id=" + index;
+                index++;
+                String nodeLabel = node.getContentDescription() != null ? " label='" + node.getContentDescription() + "'" : "";
+                System.out.println("<input " + nodeId + nodeLabel + ">" + node.getText() + "</input>");
+            } else if (hasContent(node) || "android.widget.TextView".equals(nodeName) || "android.widget.Button".equals(nodeName) || "android.widget.ImageButton".equals(nodeName)) {
+                if (node.getText() != null) {
+                    String nodeId = "id=" + index;
+                    index += 1;
+                    String nodeLabel = node.getContentDescription() != null ? " label='" + node.getContentDescription() + "'" : "";
+                    System.out.println("<button " + nodeId + nodeLabel + ">" + node.getText() + "</button>");
+                }
+            } else {
+                String nodeLabel = node.getContentDescription() != null ? " label='" + node.getContentDescription() + "'" : "";
+                if (nodeLabel == "" && !hasContent(node)) {
+                } else {
+                    String nodeId = "id=" + index;
+                    index++;
+                    System.out.println("<p " + nodeId + nodeLabel + "></p>");
+                }
+            }
+
+            for (int i = 0; i < node.getChildCount(); i++) {
+                traverseAndPrintNode(node.getChild(i));
+            }
+        }
+    }
+
+    private boolean hasContent(AccessibilityNodeInfo node) {
+        CharSequence text = node.getText();
+        return text != null && !text.toString().isEmpty();
+    }
+
+    private void traverseAndPrintNode2(AccessibilityNodeInfo node) {
+        if (node != null) {
+            String nodeName = node.getClassName().toString();
+            String nodeId = "id=" + node.getWindowId();
+            String nodeLabel = node.getContentDescription() != null ? " label='" + node.getContentDescription() + "'" : "";
+            System.out.println("<" + nodeName + " " + nodeId + nodeLabel + "></" + nodeName + ">");
+
+            for (int i = 0; i < node.getChildCount(); i++) {
+                traverseAndPrintNode2(node.getChild(i));
+            }
+        }
     }
 
     private void findByID(AccessibilityNodeInfo rootInfo, String text) {

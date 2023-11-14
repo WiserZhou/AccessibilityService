@@ -12,12 +12,19 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button mBtnClick;
     private Button mBtnClick2;
+
+    private Button mBtnQuery;
     private Button mOpenFloatBtn;
     private static final int REQUEST_CODE_FLOATING_WINDOW = 1001;
 
@@ -50,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
 //                e.printStackTrace();
 //            }
 //            AutoClickUtil.autoClick(getApplicationContext(), 0.5F, 0.5F);
+            Intent intent = new Intent(getApplicationContext(), MyAccessibilityService.class);
+            startService(intent);
+            Log.e("OPEN", "MyAccessibilityService.class");
         } else {
             // 未打开无障碍服务，跳转到无障碍设置页面
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
@@ -86,16 +96,40 @@ public class MainActivity extends AppCompatActivity {
                 AppLauncher.openApp(getApplicationContext(), "open");
             }
         });
+        mBtnQuery = findViewById(R.id.button4);
+        mBtnQuery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
+                OpenAIManager openAIManager = new OpenAIManager();
+                String prompt = "hello";
+                openAIManager.queryGPTV2(prompt, new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if (response.isSuccessful()) {
+                            String responseData = response.body().string();
+                            System.out.println("Response: " + responseData);
+                        } else {
+                            System.out.println("Request failed: " + response.code() + " - " + response.message());
+                        }
+                    }
+                });
+
+
+            }
+        });
         mOpenFloatBtn = findViewById(R.id.button3);
         mOpenFloatBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.button3) {
                     if (Settings.canDrawOverlays(getApplicationContext())) {
-                        Intent intent = new Intent(getApplicationContext(), MyAccessibilityService.class);
-                        startService(intent);
-                        Log.e("OPEN", "MyAccessibilityService.class");
+
                         // 已经拥有悬浮窗权限，启动悬浮窗服务
                         startFloatingWindowService();
                     } else {
