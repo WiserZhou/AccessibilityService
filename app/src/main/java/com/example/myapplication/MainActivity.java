@@ -1,19 +1,26 @@
 package com.example.myapplication;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
+import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
-import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
+import android.speech.RecognizerIntent;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.content.ComponentName;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -26,12 +33,27 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mBtnQuery;
     private Button mOpenFloatBtn;
-    private static final int REQUEST_CODE_FLOATING_WINDOW = 1001;
+    private TextView mTvResult;
 
+    private Button mBtnStartSpeechInput;
+
+    private static final int REQUEST_CODE_FLOATING_WINDOW = 1001;
+    private static final int REQUEST_CODE_SPEECH_INPUT = 1002;
+    private static final String OPPO_PACKAGE_NAME = "com.nearme.rom.floatwindow";
+    private static final String OPPO_ACTIVITY_NAME = "com.nearme.gamecenter.floatwindow.FloatWindowActivity";
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Button openButton = findViewById(R.id.open_button);
+        openButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openOPPOSettings();
+            }
+        });
 
         setThings();
 
@@ -67,6 +89,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+        // 启动语音输入
+        mBtnStartSpeechInput = findViewById(R.id.buttonSpeechInput);
+        mBtnStartSpeechInput.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startSpeechInput();
+            }
+        });
     }
 
 
@@ -142,12 +172,22 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_CODE_FLOATING_WINDOW) {
             if (Settings.canDrawOverlays(this)) {
                 // 用户已授予悬浮窗权限，启动悬浮窗服务
                 startFloatingWindowService();
+            }
+        }
+
+        if (requestCode == REQUEST_CODE_SPEECH_INPUT) {
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                String spokenText = result.get(0);
+                mTvResult.setText(spokenText);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -164,5 +204,28 @@ public class MainActivity extends AppCompatActivity {
     private void startFloatingWindowService() {
         Intent intent = new Intent(this, FloatingWindowService.class);
         startService(intent);
+    }
+
+    private void startSpeechInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak something");
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, "Sorry, your device doesn't support speech input", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private void openOPPOSettings() {
+        Intent intent = new Intent(Settings.ACTION_SETTINGS);
+        startActivity(intent);
+
+        // 模拟用户点击操作，进入小布助手
+        ComponentName componentName = new ComponentName(OPPO_PACKAGE_NAME, OPPO_ACTIVITY_NAME);
+        Intent oppoIntent = new Intent();
+        oppoIntent.setComponent(componentName);
+        startActivity(oppoIntent);
     }
 }
