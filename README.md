@@ -1,13 +1,11 @@
 # AccessibilityService
 
-<div style="display: flex; justify-content: space-around;">
-    <img src="img\img.png" alt="img.png" style="max-width: 45%;">
-    <img src="img\image.png" alt="alt text" style="max-width: 45%;">
-</div>
+![img.png](img/img.png)
+![alt text](img/image.png)
 
 AutoDroid是一款基于大语言模型（LLM）和无障碍服务技术的智能手机自动化助手，通过将APP的UI界面转化为HTML文本，并利用LLM推理能力，能够在任何应用上自动化执行任务，突破了传统智能助手依赖API和开发者适配的限制。其创新点包括离线生成APP的Memory表、快速跳转指令执行、隐私保护功能等，尤其关注残障人士的使用需求，提供便捷的语音输入和自动化操作。同时，AutoDroid通过将LLM部署到本地手机，确保了用户数据的隐私安全，不需要将信息上传至云端，满足了对隐私保护有高要求的用户需求。
 
-![alt text](img\image-1.png)
+![alt text](img/image-1.png)
 <p align="center">图1 整体问题结构设计</p>
 
 依据图中的问题抽象，项目主要问题为界面表示、知识整合、开销优化。对问题进一步划分如图1所示。整体分为三个大模块，分别描述如下：
@@ -31,10 +29,10 @@ AutoDroid是一款基于大语言模型（LLM）和无障碍服务技术的智�
 在AutoDroid运行时，主要的开销来自于对大语言模型的请求。因此，降低每个任务的请求频次将有助于降低整个系统的开销。此外，在更细粒度的层面上，在每个提示词中删去不必要的部分，也会是相当有效的方法。
 
 UI Prompting 具体过程：
-![alt text](img\image-2.png)
+![alt text](img/image-2.png)
 <p align="center">图2 UI Prompting</p>
 
 ## 界面设计
 
-![alt text](img\image-3.png)
+![alt text](img/image-3.png)
 <p align="center">图3 AutoDroid 启动界面</p>
